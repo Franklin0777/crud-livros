@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!--
+  CAMADA VIEW — lista de livros.
+  Recebe do LivroController.listar():
+    "livros" -> a List<Livro> vinda do banco
+    "busca"  -> o texto pesquisado (se houver)
+  th:each repete a linha da tabela para cada livro.
+  th:text escapa o que foi digitado (proteção contra XSS).
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Livros</title>
+  <link rel="stylesheet" th:href="@{/css/estilo.css}">
+</head>
+<body>
+  <header class="topo">
+    <a class="marca" th:href="@{/livros}">Livraria · CRUD de Livros</a>
+  </header>
+
+  <main>
+    <div class="topo-pagina">
+      <h1>Livros</h1>
+      <a class="btn" th:href="@{/livros/novo}">+ Novo livro</a>
+    </div>
+
+    <!-- Mensagens enviadas pelo Controller depois de salvar ou excluir -->
+    <p class="aviso sucesso" th:if="${mensagem}" th:text="${mensagem}">Salvo com sucesso.</p>
+    <p class="aviso erro" th:if="${erro}" th:text="${erro}">Erro.</p>
+
+    <!-- Busca por título: GET /livros?busca=texto -->
+    <form class="busca" th:action="@{/livros}" method="get">
+      <input type="search" name="busca" th:value="${busca}" placeholder="Buscar por título">
+      <button class="btn secundario" type="submit">Buscar</button>
+      <a th:if="${busca}" th:href="@{/livros}">Limpar</a>
+    </form>
+
+    <p th:if="${#lists.isEmpty(livros)}">Nenhum livro encontrado.</p>
+
+    <table th:unless="${#lists.isEmpty(livros)}">
+      <thead>
+        <tr><th>Título</th><th>Autor</th><th>Ano</th><th>Preço</th><th>Ações</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="l : ${livros}">
+          <td th:text="${l.titulo}">Dom Casmurro</td>
+          <td th:text="${l.autor}">Machado de Assis</td>
+          <td th:text="${l.anoPublicacao}">1899</td>
+          <td th:text="'R$ ' + ${#numbers.formatDecimal(l.preco, 1, 'POINT', 2, 'COMMA')}">R$ 39,90</td>
+          <td class="acoes-tabela">
+            <a th:href="@{/livros/{id}/editar(id=${l.id})}">Editar</a>
+            <!-- Excluir por POST. data-confirmar: o app.js pergunta antes de enviar -->
+            <form th:action="@{/livros/{id}/excluir(id=${l.id})}" method="post"
+                  data-confirmar="Excluir este livro?">
+              <button class="link-perigo" type="submit">Excluir</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+
+  <script th:src="@{/js/app.js}"></script>
+</body>
+</html>
